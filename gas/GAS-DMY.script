@@ -2,9 +2,9 @@
 ;*****
 ; Gaszähler - DMY
 ;
-; Chart Script by ottelo.jimdo.de - modified by waldy
+; Chart Script by ottelo.jimdo.de - modified by Lasergravurwesterwald
 ;
-; Tested by waldy
+; Tested by Lasergravurwesterwald
 ;*****
 ; - Haken bei "Skript aktivieren" setzen
 ; - Skript auswaehlen
@@ -123,4 +123,5 @@ Jahresverbrauch{m}%2(GasTotal-yval)% m3
 ; Zeit
 Datum{m}%s(2.0day)%.%s(2.0month)%.%s(2.0year)% - %s(2.0hours)%:%s(2.0mins)%:%s(2.0secs)%
 Uptime{m}%utm%
+
 
