@@ -2,9 +2,9 @@
 ;*****
 ; Gaszähler - DMY + Charts
 ;
-; Chart Script by ottelo.jimdo.de - modified by waldy
+; Chart Script by ottelo.jimdo.de - modified by Lasergravurwesterwald
 ;
-; Tested by waldy
+; Tested by Lasergravurwesterwald
 ;*****
 ; - Haken bei "Skript aktivieren" setzen
 ; - Skript auswaehlen
@@ -190,8 +190,9 @@ $<script type="text/javascript">google.charts.load('current',{packages:['corecha
 %=#monthsub
 
 $<center><span style="font-size:10px;">
-$Original by ottelo.jimdo.de - modified by waldy<br>
+$Original by ottelo.jimdo.de - modified by Lasergravurwesterwald<br>
 $Hinweis: Die Daten werden immer um Mitternacht gespeichert!<br>
 $Der Restart Button speichert ebenfalls die Daten.<br>
 
 $</span></center></div>
+
