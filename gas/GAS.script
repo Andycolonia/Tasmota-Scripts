@@ -2,7 +2,7 @@
 ;*****
 ; Gaszähler
 ;
-; Tested by waldy
+; Tested by Lasergravurwesterwald
 ;*****
 ; - Haken bei "Skript aktivieren" setzen
 ; - Skript auswaehlen
@@ -25,5 +25,6 @@ factor=100
 ; Setupline
 +1,14,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m³,total,18)
+
 
 
