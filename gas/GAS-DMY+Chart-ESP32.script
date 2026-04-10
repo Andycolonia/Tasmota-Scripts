@@ -103,7 +103,7 @@ wcs chart.draw(data,options);}google.charts.setOnLoadCallback(drawChart);</scrip
 ;-- SML --
 >M 1
 ; Setupline
-+1,0,c,1,-500,Gas
++1,4,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m3,total,18)
 #
 
