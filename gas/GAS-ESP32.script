@@ -1,4 +1,4 @@
->D
+>D 10
 ;*****
 ; Gaszähler
 ;
@@ -13,7 +13,13 @@
 ; 1 imp ≙ 0,1 m³   =>  10
 ; 1 imp ≙ 1,0 m³   =>  1
 factor=100
-
+; >>> ABRECHNUNGSDATEN - alle Werte von der Gasrechnung  <<<
+; Gaspreis pro kWh in EUR (z.B. 0.12 = 12 Cent/kWh)
+gpreis=0.12
+; Brennwert in kWh/m3 (ca. 10.0 - 11.5)
+brennwert=11.0
+; Zustandszahl / z-Zahl (meist ca. 0.95)
+zzahl=0.95
 >B
 =>sensor53 r
 ;
@@ -25,5 +31,9 @@ factor=100
 ; Setupline
 +1,4,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m³,total,18)
-
-
+; WEB INTERFACE
+>W
+; Energie (kWh = m3 * Brennwert * Zustandszahl) und Kosten
+Verbrauch{m}%2(sml[1]*brennwert*zzahl)% kWh
+Gaspreis{m}%3(gpreis)% €/kWh
+Gesamtkosten{m}%2(sml[1]*brennwert*zzahl*gpreis)% €
