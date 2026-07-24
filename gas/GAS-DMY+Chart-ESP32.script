@@ -2,15 +2,15 @@
 ;*****
 ; Gaszähler - DMY + Charts
 ;
-; Chart Script by ottelo.jimdo.de - modified by Smart Solutions Westerwald
+; Chart Script by ottelo.jimdo.de - modified by smart-solutions-westerwald
 ;
-; Tested by Smart Solutions Westerwald
+; Tested by smart-solutions-westerwald
 ;*****
 ; - Haken bei "Skript aktivieren" setzen
 ; - Skript auswaehlen
 ; - Speichern anklicken
 ;*****
-; Faktor
+; Faktor (factor = XXX durch den Wert, abgebildet auf dem Gaszähler, ersetzen 100, 10 oder 1)
 ; 1 imp ≙ 0,01 m³  =>  100
 ; 1 imp ≙ 0,1 m³   =>  10
 ; 1 imp ≙ 1,0 m³   =>  1
@@ -47,7 +47,7 @@ zzahl=0.95
 is(0 "Jan|Feb|Mär|Apr|Mai|Jun|Jul|Aug|Sep|Okt|Nov|Dez|")
 ;Deaktiviere MQTT beim Start, verhindert das falsche Werte gesendet werden
 smlj=0
-;Anfangszählerstand
+;Anfangszählerstand (Die "0" ersetzen. Bsp. 1000 = 10.00m3)
 =>sensor53 c1 0
 ; -- SUBS --
 ; Tagesverbrauch Tabelle
@@ -100,7 +100,7 @@ wcs chart.draw(data,options);}google.charts.setOnLoadCallback(drawChart);</scrip
 ;-- SML --
 >M 1
 ; Setupline
-+1,4,c,1,-500,Gas
++1,14,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m3,total,18)
 #
 ; -- JEDE SEKUNDE --
@@ -183,7 +183,7 @@ $<script type="text/javascript">google.charts.load('current',{packages:['corecha
 ; Netzverbrauch und Einspeisung Monat Tabelle
 %=#monthsub
 $<center><span style="font-size:10px;">
-$Original by ottelo.jimdo.de - modified by Smart Solutions Westerwald<br>
+$Original by ottelo.jimdo.de - modified by smart-solutions-westerwald<br>
 $Hinweis: Die Daten werden immer um Mitternacht gespeichert!<br>
 $Der Restart Button speichert ebenfalls die Daten.<br>
 $</span></center></div>
