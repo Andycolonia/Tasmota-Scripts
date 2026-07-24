@@ -29,7 +29,7 @@ zzahl=0.95
 >M 1
 ;
 ; Setupline
-+1,14,c,1,-500,Gas
++1,0,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m³,total,18)
 ; WEB INTERFACE
 >W
