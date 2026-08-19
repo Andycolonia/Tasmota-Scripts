@@ -3,7 +3,7 @@
 	    { "manufacturer": "Gas", "label": "Standard", "filename": "GAS ESP8266.script" },
 	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr", "filename": "GAS-DMY ESP8266.script" },
 	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr+Chart", "filename": "GAS-DMY+Chart ESP8266.script" }
-	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr+Chart", "filename": "GAS-HOMEASSISTANT-DMY ESP8266.script" }
+	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr+Homeassistant", "filename": "GAS-HOMEASSISTANT-DMY ESP8266.script" }
 		{ "manufacturer": "Gas", "label": "Standard", "filename": "GAS ESP32.script" },
 	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr", "filename": "GAS-DMY ESP32.script" },
 	    { "manufacturer": "Gas", "label": "Historie-Tag-Monat-Jahr+Chart", "filename": "GAS-DMY+Chart ESP32.script" }
