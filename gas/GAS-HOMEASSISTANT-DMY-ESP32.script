@@ -1,0 +1,8 @@
+>D 40
+;*****
+; GAS-HOMEASSISTANT-DMY-ESP32
+;
+; PLATZHALTER - Inhalt hier eintragen.
+; Diese Datei komplett ueberschreiben; die erste Zeile
+; MUSS >D (bzw. >D 40) bleiben, sonst lehnt Tasmota das Script ab.
+;*****
