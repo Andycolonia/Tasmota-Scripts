@@ -1,6 +1,6 @@
 >D 40
 ;*****
-; Gaszähler - DMY + Home Assistant (MQTT)
+; Gaszähler - DMY + MQTT
 ;
 ; Chart Script by ottelo.jimdo.de - modified by Smart Solutions Westerwald
 ;
@@ -75,7 +75,7 @@ hour=hours
 yr=year
 ; Zeit seit letztem Boot
 utm=s(2.0(int(uptime/1440)))+"d "+s(2.0(int(uptime/60)%24))+"h "+s(2.0(uptime%60))+"m"
-; kopiere Zaehlerstand [m3] aus SML Variable
+; kopiere Zaehlerstand [m3] vom Zaehler (aus SML Variable)
 GasTotal=sml[1]
 ; Tagesverbrauch [m3]
 dcon[day]=GasTotal-dval
@@ -90,20 +90,19 @@ da=day
 for tmp (da+1) 31 1
 dcon[tmp]=0
 next
+; monthly values
 mval=GasTotal
 }
 if (chg[yr]>0) {
 ; Jahreswechsel
 yval=GasTotal
 }
+; daily values
 dval=GasTotal
 ; nur 1x um Mitternacht speichern
 svars
 }
 }
-; -- MQTT / HOME ASSISTANT --
->J
-,"GasHA":{"Tag":%3(GasTotal-dval)%,"Mon":%3(GasTotal-mval)%,"Jahr":%3(GasTotal-yval)%,"kWhTot":%2(GasTotal*brennwert*zzahl)%,"EurTag":%2((GasTotal-dval)*brennwert*zzahl*gpreis)%}
 ; WEB INTERFACE
 >W
 ; web button
