@@ -1,8 +1,89 @@
 >D 40
 ;*****
-; GAS-HOMEASSISTANT-DMY-ESP8266
-;
-; PLATZHALTER - Inhalt hier eintragen.
-; Diese Datei komplett ueberschreiben; die erste Zeile
-; MUSS >D (bzw. >D 40) bleiben, sonst lehnt Tasmota das Script ab.
+; Gaszähler - Tages-/Monats-/Jahreswerte + MQTT
+; Basis: ottelo.jimdo.de
 ;*****
+; Faktor: 1 imp = 0,01 m3 => 100 | 0,1 m3 => 10 | 1,0 m3 => 1
+factor=100
+; -- ARRAYS --
+M:p:dcon=0 31
+M:p:mcon=0 12
+; -- VARS --
+GasTotal=0
+p:mval=0
+p:dval=0
+p:yval=0
+tmp=0
+utm="00d 00h 00m"
+hour=0
+yr=0
+da=1
+save=0
+; >>> ABRECHNUNGSDATEN VON DER GASRECHNUNG <
+gpreis=0.12
+brennwert=11.0
+zzahl=0.95
+; -- BOOT --
+>B
+=>sensor53 r
+smlj=0
+; Anfangszaehlerstand in Hundertsteln (123456 = 1234,56 m3)
+=>sensor53 c1 0
+; -- SML / ZAEHLEREINGANG --
+>M 1
++1,14,c,1,-500,Gas
+1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m3,total,18)
+#
+; -- JEDE SEKUNDE --
+>S
+if (save==1) {
+save=0
+svars
+print Daten wurden gespeichert
+}
+if (sml[1]>0) {
+smlj=1
+}
+if (year<2020) {
+print NTP not ready
+break
+}
+if (upsecs%60==0) {
+hour=hours
+yr=year
+utm=s(2.0(int(uptime/1440)))+"d "+s(2.0(int(uptime/60)%24))+"h "+s(2.0(uptime%60))+"m"
+GasTotal=sml[1]
+dcon[day]=GasTotal-dval
+mcon[month]=GasTotal-mval
+if ((chg[hour]>0) and (hour==0)) {
+if (day>1) {
+da=day
+} else {
+for tmp (da+1) 31 1
+dcon[tmp]=0
+next
+mval=GasTotal
+}
+if (chg[yr]>0) {
+yval=GasTotal
+}
+dval=GasTotal
+svars
+}
+}
+; -- WEBINTERFACE --
+>W
+bu(save "gespeichert!" "Daten sofort speichern")
+Tagesverbrauch{m}%2(GasTotal-dval)% m3
+Monatsverbrauch{m}%2(GasTotal-mval)% m3
+Jahresverbrauch{m}%2(GasTotal-yval)% m3
+Tagesverbrauch{m}%2((GasTotal-dval)*brennwert*zzahl)% kWh
+Monatsverbrauch{m}%2((GasTotal-mval)*brennwert*zzahl)% kWh
+Jahresverbrauch{m}%2((GasTotal-yval)*brennwert*zzahl)% kWh
+Gaspreis{m}%3(gpreis)% €/kWh
+Tageskosten{m}%2((GasTotal-dval)*brennwert*zzahl*gpreis)% €
+Monatskosten{m}%2((GasTotal-mval)*brennwert*zzahl*gpreis)% €
+Jahreskosten{m}%2((GasTotal-yval)*brennwert*zzahl*gpreis)% €
+Gesamtkosten{m}%2(GasTotal*brennwert*zzahl*gpreis)% €
+Datum{m}%s(2.0day)%.%s(2.0month)%.%s(2.0year)% - %s(2.0hours)%:%s(2.0mins)%:%s(2.0secs)%
+Uptime{m}%utm%
