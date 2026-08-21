@@ -1,24 +1,14 @@
 >D 40
-;*****
-; Gaszaehler - Tag/Monat/Jahr + Brennwert + Kosten + MQTT (HA-tauglich)
-; Basis: ottelo.jimdo.de, MQTT-Ausgabe fuer Home Assistant
-;*****
-; Faktor: 1 imp = 0,01 m3 => 100 | 0,1 m3 => 10 | 1,0 m3 => 1
 factor=100
- 
-; -- ARRAYS --
 M:p:dcon=0 31
 M:p:mcon=0 12
- 
-; >>> ABRECHNUNGSDATEN VON DER GASRECHNUNG <<<
-; Brennwert in kWh/m3
-brennwert=11.0
-; Zustandszahl
+; ABRECHNUNGSDATEN von der Gasrechnung. Aenderung greift nach 60s.
+; Brennwert in kWh/m3 (typisch 10.0 - 11.5)
+bwert=11.0
+; Zustandszahl / z-Zahl (typisch ca. 0.95)
 zzahl=0.95
-; Arbeitspreis in EUR pro kWh (brutto)
+; Arbeitspreis in EUR pro kWh (0.12 = 12 Cent)
 gpreis=0.12
- 
-; -- VARS --
 GasTotal=0
 p:mval=0
 p:dval=0
@@ -29,78 +19,64 @@ hour=0
 yr=0
 da=1
 save=0
+smlj=0
 kfak=10.45
-eurm3=1.254
-m3tag=0
-m3monat=0
-m3jahr=0
-kwhtag=0
-kwhmonat=0
-kwhjahr=0
-kwhges=0
-eurtag=0
-eurmonat=0
-eurjahr=0
-eurges=0
- 
-; -- BOOT --
+pm3=1.254
+m3t=0
+m3m=0
+m3j=0
+kwt=0
+kwm=0
+kwj=0
+kwg=0
+eut=0
+eum=0
+euj=0
+eug=0
 >B
 =>sensor53 r
-; Umrechnungsfaktoren einmalig berechnen
-kfak=brennwert*zzahl
-eurm3=kfak*gpreis
-; Zaehlerstand-Vorgabe in Hundertstel m3 (379 = 3,79 m3)
-; !! WICHTIG: nach dem ersten Start mit ; auskommentieren, sonst
-; !! wird der Zaehlerstand bei JEDEM Neustart wieder auf 3,79 m3 gesetzt
-=>sensor53 c1 379
- 
-; -- SML / ZAEHLEREINGANG --
+; ANFANGSZAEHLERSTAND einmalig in der Console setzen, nicht hier:
+;   sensor53 c1 123456   (Hundertstel m3, entspricht 1234,56 m3)
+; Im Script wuerde er bei jedem Neustart neu gesetzt und der
+; Verlauf in Home Assistant dadurch zerstoert.
+smlj=0
+kfak=bwert*zzahl
+pm3=kfak*gpreis
 >M 1
 +1,14,c,1,-500,Gas
 1,1-0:1.8.0*255(@%factor%,Gesamtverbrauch,m3,total,18)
 #
- 
-; -- JEDE SEKUNDE --
 >S
 if (save==1) {
 save=0
 svars
-print Daten wurden gespeichert
 }
- 
+if (sml[1]>0) {
+smlj=1
+}
 if (year<2020) {
-print NTP not ready
 break
 }
- 
 GasTotal=sml[1]
- 
-; Verbrauch in m3
-m3tag=GasTotal-dval
-m3monat=GasTotal-mval
-m3jahr=GasTotal-yval
- 
-; alle 60s
+m3t=GasTotal-dval
+m3m=GasTotal-mval
+m3j=GasTotal-yval
 if (upsecs%60==0) {
 hour=hours
 yr=year
 utm=s(2.0(int(uptime/1440)))+"d "+s(2.0(int(uptime/60)%24))+"h "+s(2.0(uptime%60))+"m"
- 
-dcon[day]=m3tag
-mcon[month]=m3monat
- 
-; Energie in kWh
-kwhtag=m3tag*kfak
-kwhmonat=m3monat*kfak
-kwhjahr=m3jahr*kfak
-kwhges=GasTotal*kfak
- 
-; Kosten in EUR
-eurtag=kwhtag*gpreis
-eurmonat=kwhmonat*gpreis
-eurjahr=kwhjahr*gpreis
-eurges=kwhges*gpreis
- 
+dcon[day]=m3t
+mcon[month]=m3m
+kfak=bwert*zzahl
+pm3=kfak*gpreis
+kwt=m3t*kfak
+kwm=m3m*kfak
+kwj=m3j*kfak
+kwg=GasTotal*kfak
+eut=kwt*gpreis
+eum=kwm*gpreis
+euj=kwj*gpreis
+eug=kwg*gpreis
 if ((chg[hour]>0) and (hour==0)) {
 if (day>1) {
 da=day
@@ -116,24 +92,16 @@ yval=GasTotal
 dval=GasTotal
 svars
 }
- 
-; MQTT: Verbrauch m3 + kWh
-=>publish tele/%topic%/GAS_STATS {"m3_Tag":%2m3tag%,"m3_Monat":%2m3monat%,"m3_Jahr":%2m3jahr%,"m3_Gesamt":%2GasTotal%,"kWh_Tag":%2kwhtag%,"kWh_Monat":%2kwhmonat%,"kWh_Jahr":%2kwhjahr%,"kWh_Gesamt":%2kwhges%}
-; MQTT: Kosten + Abrechnungsdaten
-=>publish tele/%topic%/GAS_COST {"EUR_Tag":%2eurtag%,"EUR_Monat":%2eurmonat%,"EUR_Jahr":%2eurjahr%,"EUR_Gesamt":%2eurges%,"Preis_kWh":%3gpreis%,"Preis_m3":%3eurm3%,"Brennwert":%2brennwert%,"Zustandszahl":%2zzahl%}
+if (smlj>0) {
+=>publish tele/%topic%/GAS_STATS {"m3_Tag":%2m3t%,"m3_Monat":%2m3m%,"m3_Jahr":%2m3j%,"m3_Gesamt":%2GasTotal%,"kWh_Tag":%2kwt%,"kWh_Monat":%2kwm%,"kWh_Jahr":%2kwj%,"kWh_Gesamt":%2kwg%}
+=>publish tele/%topic%/GAS_COST {"EUR_Tag":%2eut%,"EUR_Monat":%2eum%,"EUR_Jahr":%2euj%,"EUR_Gesamt":%2eug%,"Preis_kWh":%3gpreis%,"Preis_m3":%3pm3%,"Brennwert":%2bwert%,"Zustandszahl":%2zzahl%}
 }
- 
-; -- WEBINTERFACE --
+}
 >W
 bu(save "gespeichert!" "Daten sofort speichern")
-Tagesverbrauch{m}%2m3tag% m3
-Monatsverbrauch{m}%2m3monat% m3
-Jahresverbrauch{m}%2m3jahr% m3
-Gesamtverbrauch{m}%2GasTotal% m3
-Tag{m}%2kwhtag% kWh - %2eurtag% EUR
-Monat{m}%2kwhmonat% kWh - %2eurmonat% EUR
-Jahr{m}%2kwhjahr% kWh - %2eurjahr% EUR
-Gesamt{m}%2kwhges% kWh - %2eurges% EUR
-Gaspreis{m}%3gpreis% EUR/kWh - %3eurm3% EUR/m3
-Datum{m}%s(2.0day)%.%s(2.0month)%.%s(2.0year)% - %s(2.0hours)%:%s(2.0mins)%
+Tag{m}%2m3t% m3 - %2kwt% kWh - %2eut% EUR
+Monat{m}%2m3m% m3 - %2kwm% kWh - %2eum% EUR
+Jahr{m}%2m3j% m3 - %2kwj% kWh - %2euj% EUR
+Gesamt{m}%2GasTotal% m3 - %2kwg% kWh - %2eug% EUR
+Preis{m}%3gpreis% EUR/kWh - %3pm3% EUR/m3
 Uptime{m}%utm%
