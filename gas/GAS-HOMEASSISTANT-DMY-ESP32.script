@@ -1,10 +1,9 @@
 >D 40
 ;*****
-; Gaszähler - DMY + MQTT
+; Gaszähler - DMY + MQTT (Home Assistant tauglich)
 ;
 ; Chart Script by ottelo.jimdo.de - modified by Smart Solutions Westerwald
-;
-; Tested by Smart Solutions Westerwald
+; MQTT-Ausgabe + Brennwert/Kosten ergaenzt
 ;*****
 ; - Haken bei "Skript aktivieren" setzen
 ; - Skript auswaehlen
@@ -33,20 +32,41 @@ hour=0
 yr=0
 da=1
 save=0
-; >>> ABRECHNUNGSDATEN - alle Werte von der Gasrechnung <
+smlj=0
+; >>> ABRECHNUNGSDATEN - alle Werte von der Gasrechnung <<<
 ; Gaspreis pro kWh in EUR (z.B. 0.12 = 12 Cent/kWh)
 gpreis=0.12
 ; Brennwert in kWh/m3 (ca. 10.0 - 11.5)
 brennwert=11.0
 ; Zustandszahl / z-Zahl (meist ca. 0.95)
 zzahl=0.95
+; -- BERECHNETE WERTE (nicht aendern) --
+kfak=10.45
+pm3=1.254
+m3tag=0
+m3monat=0
+m3jahr=0
+kwhtag=0
+kwhmonat=0
+kwhjahr=0
+kwhges=0
+eurtag=0
+eurmonat=0
+eurjahr=0
+eurges=0
 ; -- BOOT --
 >B
 =>sensor53 r
 ; Deaktiviere MQTT beim Start, verhindert das falsche Werte gesendet werden
 smlj=0
-; Anfangszaehlerstand in Hundertsteln (123456 = 1234,56 m3)
-=>sensor53 c1 0
+; Umrechnungsfaktoren einmalig berechnen
+kfak=brennwert*zzahl
+pm3=kfak*gpreis
+; Anfangszaehlerstand: NICHT hier setzen!
+; Diese Zeile wuerde den Zaehler bei JEDEM Neustart zuruecksetzen und in
+; Home Assistant den Verlauf zerstoeren. Anfangsstand einmalig ueber die
+; Console setzen:  sensor53 c1 123456   (Hundertstel, = 1234,56 m3)
+; =>sensor53 c1 0
 ;-- SML --
 >M 1
 ; Setupline
@@ -69,18 +89,32 @@ if (year<2020) {
 print NTP not ready
 break
 }
+; kopiere Zaehlerstand [m3] vom Zaehler (aus SML Variable)
+GasTotal=sml[1]
+; Verbrauch [m3]
+m3tag=GasTotal-dval
+m3monat=GasTotal-mval
+m3jahr=GasTotal-yval
 ; alle 60s
 if (upsecs%60==0) {
 hour=hours
 yr=year
 ; Zeit seit letztem Boot
 utm=s(2.0(int(uptime/1440)))+"d "+s(2.0(int(uptime/60)%24))+"h "+s(2.0(uptime%60))+"m"
-; kopiere Zaehlerstand [m3] vom Zaehler (aus SML Variable)
-GasTotal=sml[1]
 ; Tagesverbrauch [m3]
-dcon[day]=GasTotal-dval
+dcon[day]=m3tag
 ; Monatsverbrauch [m3]
-mcon[month]=GasTotal-mval
+mcon[month]=m3monat
+; Energie [kWh] = m3 * Brennwert * Zustandszahl
+kwhtag=m3tag*kfak
+kwhmonat=m3monat*kfak
+kwhjahr=m3jahr*kfak
+kwhges=GasTotal*kfak
+; Kosten [EUR] = kWh * Preis pro kWh
+eurtag=kwhtag*gpreis
+eurmonat=kwhmonat*gpreis
+eurjahr=kwhjahr*gpreis
+eurges=kwhges*gpreis
 ; Berechnung um Mitternacht
 if ((chg[hour]>0) and (hour==0)) {
 if (day>1) {
@@ -102,25 +136,31 @@ dval=GasTotal
 ; nur 1x um Mitternacht speichern
 svars
 }
+; MQTT nur senden wenn der Zaehler schon Daten geliefert hat
+if (smlj>0) {
+=>publish tele/%topic%/GAS_STATS {"m3_Tag":%2m3tag%,"m3_Monat":%2m3monat%,"m3_Jahr":%2m3jahr%,"m3_Gesamt":%2GasTotal%,"kWh_Tag":%2kwhtag%,"kWh_Monat":%2kwhmonat%,"kWh_Jahr":%2kwhjahr%,"kWh_Gesamt":%2kwhges%}
+=>publish tele/%topic%/GAS_COST {"EUR_Tag":%2eurtag%,"EUR_Monat":%2eurmonat%,"EUR_Jahr":%2eurjahr%,"EUR_Gesamt":%2eurges%,"Preis_kWh":%3gpreis%,"Preis_m3":%3pm3%,"Brennwert":%2brennwert%,"Zustandszahl":%2zzahl%}
+}
 }
 ; WEB INTERFACE
 >W
 ; web button
 bu(save "gespeichert!" "Daten sofort speichern")
 ; Verbrauch
-Tagesverbrauch{m}%2(GasTotal-dval)% m3
-Monatsverbrauch{m}%2(GasTotal-mval)% m3
-Jahresverbrauch{m}%2(GasTotal-yval)% m3
+Tagesverbrauch{m}%2m3tag% m3
+Monatsverbrauch{m}%2m3monat% m3
+Jahresverbrauch{m}%2m3jahr% m3
+Gesamtverbrauch{m}%2GasTotal% m3
 ; Energie (kWh = m3 * Brennwert * Zustandszahl)
-Tagesverbrauch{m}%2((GasTotal-dval)*brennwert*zzahl)% kWh
-Monatsverbrauch{m}%2((GasTotal-mval)*brennwert*zzahl)% kWh
-Jahresverbrauch{m}%2((GasTotal-yval)*brennwert*zzahl)% kWh
+Tagesverbrauch{m}%2kwhtag% kWh
+Monatsverbrauch{m}%2kwhmonat% kWh
+Jahresverbrauch{m}%2kwhjahr% kWh
 ; Kosten (kWh * Preis pro kWh)
-Gaspreis{m}%3(gpreis)% €/kWh
-Tageskosten{m}%2((GasTotal-dval)*brennwert*zzahl*gpreis)% €
-Monatskosten{m}%2((GasTotal-mval)*brennwert*zzahl*gpreis)% €
-Jahreskosten{m}%2((GasTotal-yval)*brennwert*zzahl*gpreis)% €
-Gesamtkosten{m}%2(GasTotal*brennwert*zzahl*gpreis)% €
+Gaspreis{m}%3gpreis% EUR/kWh - %3pm3% EUR/m3
+Tageskosten{m}%2eurtag% EUR
+Monatskosten{m}%2eurmonat% EUR
+Jahreskosten{m}%2eurjahr% EUR
+Gesamtkosten{m}%2eurges% EUR
 ; Zeit
 Datum{m}%s(2.0day)%.%s(2.0month)%.%s(2.0year)% - %s(2.0hours)%:%s(2.0mins)%:%s(2.0secs)%
 Uptime{m}%utm%
