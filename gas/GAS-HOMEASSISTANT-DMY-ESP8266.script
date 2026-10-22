@@ -58,6 +58,21 @@ if (year<2020) {
 break
 }
 GasTotal=sml[1]
+; Startwerte setzen, wenn noch leer (Erstinstallation) bzw. Zaehler unter Startwert liegt (Zaehler neu gesetzt)
+if (GasTotal>0) {
+if ((dval==0) or (dval>GasTotal)) {
+dval=GasTotal
+save=1
+}
+if ((mval==0) or (mval>GasTotal)) {
+mval=GasTotal
+save=1
+}
+if ((yval==0) or (yval>GasTotal)) {
+yval=GasTotal
+save=1
+}
+}
 m3t=GasTotal-dval
 m3m=GasTotal-mval
 m3j=GasTotal-yval
@@ -86,7 +101,7 @@ dcon[tmp]=0
 next
 mval=GasTotal
 }
-if (chg[yr]>0) {
+if ((day==1) and (month==1)) {
 yval=GasTotal
 }
 dval=GasTotal
