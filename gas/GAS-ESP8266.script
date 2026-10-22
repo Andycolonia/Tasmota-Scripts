@@ -23,8 +23,8 @@ zzahl=0.95
 >B
 =>sensor53 r
 ;
-;Anfangszählerstand (Die "0" ersetzen. Bsp. 1000 = 10.00m3)
-=>sensor53 c1 0
+; Anfangszählerstand NICHT hier setzen (wuerde bei jedem Neustart den Zaehler zuruecksetzen).
+; Einmalig in der Konsole setzen: Sensor53 c1 <Zaehlerstand*Faktor>   Bsp. 11608.26 m3 bei Faktor 100 => Sensor53 c1 1160826
 ;
 >M 1
 ;
