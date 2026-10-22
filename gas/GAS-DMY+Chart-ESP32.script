@@ -47,8 +47,8 @@ zzahl=0.95
 is(0 "Jan|Feb|Mär|Apr|Mai|Jun|Jul|Aug|Sep|Okt|Nov|Dez|")
 ;Deaktiviere MQTT beim Start, verhindert das falsche Werte gesendet werden
 smlj=0
-;Anfangszählerstand (Die "0" ersetzen. Bsp. 1000 = 10.00m3)
-=>sensor53 c1 0
+; Anfangszählerstand NICHT hier setzen (wuerde bei jedem Neustart den Zaehler zuruecksetzen).
+; Einmalig in der Konsole setzen: Sensor53 c1 <Zaehlerstand*Faktor>   Bsp. 11608.26 m3 bei Faktor 100 => Sensor53 c1 1160826
 ; -- SUBS --
 ; Tagesverbrauch Tabelle
 #daysub
@@ -95,7 +95,6 @@ wcs ]);
 wcs var options={chartArea:{left:40,width:'86%%'},legend:'none',title:'Verbräuche (Jahr %0(year-1)%/%0year%)',vAxis:{format:'# m3'}};
 wcs var chart=new google.visualization.ColumnChart(document.getElementById('month'));
 wcs chart.draw(data,options);}google.charts.setOnLoadCallback(drawChart);</script>
-} chart.draw(data,options);}google.charts.setOnLoadCallback(drawChart);</script>
 }
 ;-- SML --
 >M 1
@@ -127,6 +126,21 @@ yr=year
 utm=s(2.0(int(uptime/1440)))+"d "+s(2.0(int(uptime/60)%24))+"h "+s(2.0(uptime%60))+"m"
 ; kopiere Netzbezug [m3] vom Zaehler (aus SML Variable)
 GasTotal=sml[1]
+; Startwerte setzen, wenn noch leer (Erstinstallation) bzw. Zaehler unter Startwert liegt (Zaehler neu gesetzt)
+if (GasTotal>0) {
+if ((dval==0) or (dval>GasTotal)) {
+dval=GasTotal
+save=1
+}
+if ((mval==0) or (mval>GasTotal)) {
+mval=GasTotal
+save=1
+}
+if ((yval==0) or (yval>GasTotal)) {
+yval=GasTotal
+save=1
+}
+}
 ; Tagesverbrauch [m3]
 dcon[day]=GasTotal-dval
 ; Monatsverbrauch [m3]
@@ -143,8 +157,8 @@ next
 ; monthly values
 mval=GasTotal
 }
-if (chg[yr]>0) {
-; Jahreswechsel
+if ((day==1) and (month==1)) {
+; Jahreswechsel (1.1., 00:00)
 yval=GasTotal
 }
 ; daily values
