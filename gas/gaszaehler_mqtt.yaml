@@ -1,0 +1,261 @@
+# ============================================================
+# Gaszähler – MQTT-Sensoren für Home Assistant
+#
+# Passt unverändert für die ESP8266- und die ESP32-Variante.
+# Das "+" in den Topics passt auf jeden Tasmota-Gerätenamen,
+# es muss also nichts angepasst werden.
+#
+# Voraussetzung: Auf dem Gerät läuft ein Script der Reihe
+# "GAS-HOMEASSISTANT-DMY-...". Nur dieses sendet GAS_STATS und
+# GAS_COST. Die anderen Gas-Scripts senden diese Werte nicht.
+#
+# Diesen Block in die configuration.yaml einfügen.
+# Ist dort bereits ein "mqtt:" vorhanden, nur die Einträge
+# ab "- name:" unter das vorhandene "sensor:" einfügen
+# (die Einrückung der Einträge muss zum vorhandenen "sensor:" passen).
+# Danach unter Entwicklerwerkzeuge > YAML die Konfiguration prüfen
+# und Home Assistant neu starten.
+#
+# Hinweise:
+# - Das Gerät sendet erst nach dem ersten gezählten Impuls
+#   (Zählerstand > 0), vorher bleiben die Sensoren leer.
+# - Gesendet wird einmal pro Minute. Nach einem Neustart von
+#   Home Assistant sind die Sensoren bis zu 60 Sekunden leer.
+# ============================================================
+mqtt:
+  sensor:
+    # ---------- Verbrauch in m³ ----------
+    - name: "Gaszähler Verbrauch Tag"
+      unique_id: gaszaehler_m3_tag
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.m3_Tag }}"
+      unit_of_measurement: "m³"
+      state_class: measurement
+      suggested_display_precision: 2
+      icon: "mdi:fire"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Verbrauch Monat"
+      unique_id: gaszaehler_m3_monat
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.m3_Monat }}"
+      unit_of_measurement: "m³"
+      state_class: measurement
+      suggested_display_precision: 2
+      icon: "mdi:fire"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Verbrauch Jahr"
+      unique_id: gaszaehler_m3_jahr
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.m3_Jahr }}"
+      unit_of_measurement: "m³"
+      state_class: measurement
+      suggested_display_precision: 2
+      icon: "mdi:fire"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    # Zählerstand -> dieser Sensor gehört ins Energie-Dashboard
+    - name: "Gaszähler Stand Gesamt"
+      unique_id: gaszaehler_m3_gesamt
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.m3_Gesamt }}"
+      unit_of_measurement: "m³"
+      device_class: gas
+      state_class: total_increasing
+      suggested_display_precision: 2
+      icon: "mdi:counter"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+
+    # ---------- Energie in kWh ----------
+    - name: "Gaszähler Energie Tag"
+      unique_id: gaszaehler_kwh_tag
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.kWh_Tag }}"
+      unit_of_measurement: "kWh"
+      state_class: measurement
+      suggested_display_precision: 1
+      icon: "mdi:flame"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Energie Monat"
+      unique_id: gaszaehler_kwh_monat
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.kWh_Monat }}"
+      unit_of_measurement: "kWh"
+      state_class: measurement
+      suggested_display_precision: 1
+      icon: "mdi:flame"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Energie Jahr"
+      unique_id: gaszaehler_kwh_jahr
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.kWh_Jahr }}"
+      unit_of_measurement: "kWh"
+      state_class: measurement
+      suggested_display_precision: 1
+      icon: "mdi:flame"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    # Energie-Zählerstand: alternativ zum m³-Sensor im Energie-Dashboard nutzbar
+    - name: "Gaszähler Energie Gesamt"
+      unique_id: gaszaehler_kwh_gesamt
+      state_topic: "tele/+/GAS_STATS"
+      value_template: "{{ value_json.kWh_Gesamt }}"
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+      suggested_display_precision: 1
+      icon: "mdi:counter"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+
+    # ---------- Kosten ----------
+    - name: "Gaszähler Kosten Tag"
+      unique_id: gaszaehler_eur_tag
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.EUR_Tag }}"
+      unit_of_measurement: "EUR"
+      device_class: monetary
+      suggested_display_precision: 2
+      icon: "mdi:cash"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Kosten Monat"
+      unique_id: gaszaehler_eur_monat
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.EUR_Monat }}"
+      unit_of_measurement: "EUR"
+      device_class: monetary
+      suggested_display_precision: 2
+      icon: "mdi:cash"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Kosten Jahr"
+      unique_id: gaszaehler_eur_jahr
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.EUR_Jahr }}"
+      unit_of_measurement: "EUR"
+      device_class: monetary
+      suggested_display_precision: 2
+      icon: "mdi:cash"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Kosten Gesamt"
+      unique_id: gaszaehler_eur_gesamt
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.EUR_Gesamt }}"
+      unit_of_measurement: "EUR"
+      device_class: monetary
+      state_class: total
+      suggested_display_precision: 2
+      icon: "mdi:cash-multiple"
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+
+    # ---------- Abrechnungsdaten (Diagnose) ----------
+    # Preis pro m³ – als Preis-Entität im Energie-Dashboard verwendbar
+    - name: "Gaszähler Preis pro m³"
+      unique_id: gaszaehler_preis_m3
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.Preis_m3 }}"
+      unit_of_measurement: "EUR/m³"
+      suggested_display_precision: 3
+      icon: "mdi:currency-eur"
+      entity_category: diagnostic
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Preis pro kWh"
+      unique_id: gaszaehler_preis_kwh
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.Preis_kWh }}"
+      unit_of_measurement: "EUR/kWh"
+      suggested_display_precision: 3
+      icon: "mdi:currency-eur"
+      entity_category: diagnostic
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Brennwert"
+      unique_id: gaszaehler_brennwert
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.Brennwert }}"
+      unit_of_measurement: "kWh/m³"
+      suggested_display_precision: 2
+      icon: "mdi:information-outline"
+      entity_category: diagnostic
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Zustandszahl"
+      unique_id: gaszaehler_zustandszahl
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.Zustandszahl }}"
+      suggested_display_precision: 4
+      icon: "mdi:information-outline"
+      entity_category: diagnostic
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
