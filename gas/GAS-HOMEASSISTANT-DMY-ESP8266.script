@@ -9,6 +9,8 @@ bwert=11.0
 zzahl=0.95
 ; Arbeitspreis in EUR pro kWh (0.12 = 12 Cent)
 gpreis=0.12
+; Grundpreis in EUR pro Monat (brutto, z.B. 12.50). 0 = kein Grundpreis
+grundpreis=0.00
 GasTotal=0
 p:mval=0
 p:dval=0
@@ -88,9 +90,9 @@ kwt=m3t*kfak
 kwm=m3m*kfak
 kwj=m3j*kfak
 kwg=GasTotal*kfak
-eut=kwt*gpreis
-eum=kwm*gpreis
-euj=kwj*gpreis
+eut=kwt*gpreis+grundpreis*12/365
+eum=kwm*gpreis+grundpreis
+euj=kwj*gpreis+grundpreis*month
 eug=kwg*gpreis
 if ((chg[hour]>0) and (hour==0)) {
 if (day>1) {
@@ -109,7 +111,7 @@ svars
 }
 if (smlj>0) {
 =>publish tele/%topic%/GAS_STATS {"m3_Tag":%2m3t%,"m3_Monat":%2m3m%,"m3_Jahr":%2m3j%,"m3_Gesamt":%2GasTotal%,"kWh_Tag":%2kwt%,"kWh_Monat":%2kwm%,"kWh_Jahr":%2kwj%,"kWh_Gesamt":%2kwg%}
-=>publish tele/%topic%/GAS_COST {"EUR_Tag":%2eut%,"EUR_Monat":%2eum%,"EUR_Jahr":%2euj%,"EUR_Gesamt":%2eug%,"Preis_kWh":%3gpreis%,"Preis_m3":%3pm3%,"Brennwert":%2bwert%,"Zustandszahl":%2zzahl%}
+=>publish tele/%topic%/GAS_COST {"EUR_Tag":%2eut%,"EUR_Monat":%2eum%,"EUR_Jahr":%2euj%,"EUR_Gesamt":%2eug%,"Preis_kWh":%3gpreis%,"Preis_m3":%3pm3%,"Brennwert":%2bwert%,"Zustandszahl":%2zzahl%,"Grundpreis":%2grundpreis%}
 }
 }
 >W
@@ -119,4 +121,5 @@ Monat{m}%2m3m% m3 - %2kwm% kWh - %2eum% EUR
 Jahr{m}%2m3j% m3 - %2kwj% kWh - %2euj% EUR
 Gesamt{m}%2GasTotal% m3 - %2kwg% kWh - %2eug% EUR
 Preis{m}%3gpreis% EUR/kWh - %3pm3% EUR/m3
+Grundpreis{m}%2grundpreis% EUR/Monat
 Uptime{m}%utm%
