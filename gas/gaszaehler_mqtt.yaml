@@ -259,3 +259,17 @@ mqtt:
         name: "Gaszähler"
         manufacturer: "Tasmota"
         model: "Gaszähler Lesekopf"
+
+    - name: "Gaszähler Grundpreis pro Monat"
+      unique_id: gaszaehler_grundpreis
+      state_topic: "tele/+/GAS_COST"
+      value_template: "{{ value_json.Grundpreis }}"
+      unit_of_measurement: "EUR"
+      suggested_display_precision: 2
+      icon: "mdi:currency-eur"
+      entity_category: diagnostic
+      device:
+        identifiers: ["tasmota_gaszaehler"]
+        name: "Gaszähler"
+        manufacturer: "Tasmota"
+        model: "Gaszähler Lesekopf"
