@@ -36,6 +36,8 @@ save=0
 ; >>> ABRECHNUNGSDATEN - alle Werte von der Gasrechnung  <<<
 ; Gaspreis pro kWh in EUR (z.B. 0.12 = 12 Cent/kWh)
 gpreis=0.12
+; Grundpreis in EUR pro Monat (brutto, z.B. 12.50). 0 = kein Grundpreis
+grundpreis=0.00
 ; Brennwert in kWh/m3 (ca. 10.0 - 11.5)
 brennwert=11.0
 ; Zustandszahl / z-Zahl (meist ca. 0.95)
@@ -131,9 +133,10 @@ Monatsverbrauch{m}%2((GasTotal-mval)*brennwert*zzahl)% kWh
 Jahresverbrauch{m}%2((GasTotal-yval)*brennwert*zzahl)% kWh
 ; Kosten (kWh * Preis pro kWh)
 Gaspreis{m}%3(gpreis)% €/kWh
-Tageskosten{m}%2((GasTotal-dval)*brennwert*zzahl*gpreis)% €
-Monatskosten{m}%2((GasTotal-mval)*brennwert*zzahl*gpreis)% €
-Jahreskosten{m}%2((GasTotal-yval)*brennwert*zzahl*gpreis)% €
+Grundpreis{m}%2(grundpreis)% €/Monat
+Tageskosten{m}%2((GasTotal-dval)*brennwert*zzahl*gpreis+grundpreis*12/365)% €
+Monatskosten{m}%2((GasTotal-mval)*brennwert*zzahl*gpreis+grundpreis)% €
+Jahreskosten{m}%2((GasTotal-yval)*brennwert*zzahl*gpreis+grundpreis*month)% €
 Gesamtkosten{m}%2(GasTotal*brennwert*zzahl*gpreis)% €
 ; Zeit
 Datum{m}%s(2.0day)%.%s(2.0month)%.%s(2.0year)% - %s(2.0hours)%:%s(2.0mins)%:%s(2.0secs)%
